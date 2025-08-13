@@ -1,0 +1,11 @@
+data/
+data_processed/
+models/
+results/
+*.h5ad
+h5ad/
+*.mtx
+*.pth
+__pycache__/
+*.pyc
+.DS_Store
