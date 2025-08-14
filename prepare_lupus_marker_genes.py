@@ -41,7 +41,7 @@ def prepare_gmvae_data(input_h5ad, output_dir, use_raw=True, subsample_fraction=
         adata = adata[:, available_markers]
         print(f"Reduced from {len(adata.var_names)} to {len(available_markers)} genes")
     
-    X = adata.raw.X if use_raw and adata.raw and not use_marker_genes else adata.X
+    X = adata.X  # Always use adata.X after filtering genes
     
     if not hasattr(X, 'tocsr'):
         from scipy.sparse import csr_matrix
