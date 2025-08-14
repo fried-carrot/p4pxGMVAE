@@ -8,10 +8,19 @@ import numpy as np
 import os
 from pathlib import Path
 
-def prepare_gmvae_data(input_h5ad, output_dir, use_raw=True):
+def prepare_gmvae_data(input_h5ad, output_dir, use_raw=True, subsample_fraction=None):
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     
     adata = sc.read_h5ad(input_h5ad)
+    
+    # Subsample if requested
+    if subsample_fraction is not None:
+        n_cells = adata.shape[0]
+        n_subsample = int(n_cells * subsample_fraction)
+        np.random.seed(42)  # For reproducibility
+        indices = np.random.choice(n_cells, n_subsample, replace=False)
+        adata = adata[indices, :]
+        print(f"Subsampled to {subsample_fraction*100}%: {n_subsample} cells from {n_cells}")
     
     X = adata.raw.X if use_raw and adata.raw else adata.X
     
@@ -58,10 +67,13 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, 
-                       default='/Users/sharatsakamuri/Documents/p4pxGMVAE/h5ad/CLUESImmVar_nonorm.V6.h5ad')
+                       default='h5ad/CLUESImmVar_nonorm.V6.h5ad')
     parser.add_argument('--output', type=str, 
                        default='data_processed/lupus_gmvae')
     parser.add_argument('--normalized', action='store_true')
+    parser.add_argument('--subsample', type=float, default=None,
+                       help='Fraction of cells to subsample (e.g., 0.25 for 25%)')
     args = parser.parse_args()
     
-    prepare_gmvae_data(args.input, args.output, use_raw=not args.normalized)
+    prepare_gmvae_data(args.input, args.output, use_raw=not args.normalized, 
+                      subsample_fraction=args.subsample)
